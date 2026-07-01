@@ -1,40 +1,34 @@
 import os
+import streamlit as st
 from sentence_transformers import SentenceTransformer, util
+
+@st.cache_resource
+def load_cached_semantic_model():
+    """
+    Loads and caches the Sentence-BERT embedding transformer model in system memory
+    to drastically decrease computation latency under repeated runs.
+    """
+    return SentenceTransformer('all-MiniLM-L6-v2')
 
 def evaluate_semantic_similarity(user_transcript, reference_concept_text):
     """
-    Compares the user's transcription against the ground truth reference concept 
-    using Sentence-BERT semantic embeddings and cosine similarity.
+    Compares the user transcript against the reference text using the cached 
+    Sentence-BERT embedding model and cosine similarity.
     """
     if not user_transcript or not reference_concept_text:
         return {"error": "Missing text inputs for calculation."}
         
     try:
-        # Load a lightweight, highly accurate embedding model
-        model = SentenceTransformer('all-MiniLM-L6-v2')
+        # Fetch the cached model instance instantly
+        model = load_cached_semantic_model()
         
-        # Compute sentence embeddings for both blocks of text
         embedding_user = model.encode(user_transcript, convert_to_tensor=True)
         embedding_ref = model.encode(reference_concept_text, convert_to_tensor=True)
         
-        # Calculate cosine similarity score (returns a decimal between 0 and 1)
-        similarity_score = float(util.cos_sim(embedding_user, embedding_ref)[0][0])
+        similarity_score = float(util.cos_sim(embedding_user, embedding_ref))
         
-        # Determine qualitative understanding level threshold groups
-        if similarity_score >= 0.80:
-            understanding_level = "Strong Understanding"
-            feedback = "Excellent coverage of the core definitions and concepts!"
-        elif similarity_score >= 0.55:
-            understanding_level = "Moderate Understanding"
-            feedback = "Good baseline. Try to include more specific structural details or terminology."
-        else:
-            understanding_level = "Poor Understanding"
-            feedback = "The explanation deviates significantly from the expected technical parameters."
-            
         return {
-            "score": round(similarity_score * 100, 1), # convert to percentage
-            "level": understanding_level,
-            "feedback": feedback
+            "score": round(similarity_score * 100, 1)
         }
     except Exception as e:
         return {"error": f"Semantic model engine failure: {str(e)}"}
