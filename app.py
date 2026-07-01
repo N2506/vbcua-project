@@ -1,14 +1,12 @@
-import streamlit as str
+import streamlit as st
 import os
 import sys
 
-# Maintain clean local path architecture
 current_dir = os.path.dirname(os.path.abspath(__file__))
 modules_dir = os.path.join(current_dir, "modules")
 if modules_dir not in sys.path:
     sys.path.append(modules_dir)
 
-# Ground-truth reference dictionary for conceptual comparisons
 REFERENCE_CONCEPTS = {
     "Database Normalization": "Database normalization is the process of structuring a relational database in accordance with a series of so-called normal forms in order to reduce data redundancy and improve data integrity.",
     "OSI Model Layers": "The Open Systems Interconnection model is a conceptual model that characterizes and standardizes the communication functions of a telecommunication or computing system without regard to its underlying internal structure and technology.",
@@ -16,7 +14,6 @@ REFERENCE_CONCEPTS = {
     "Cloud Computing": "Cloud computing is the on-demand availability of computer system resources, especially data storage and computing power, without direct active management by the user."
 }
 
-# Import our custom modules safely
 try:
     import waveform
     import speech_to_text
@@ -28,31 +25,30 @@ except ImportError:
     sematic_analysis = None
     report_generator = None
 
-# Configure dashboard
-str.set_page_config(
+st.set_page_config(
     page_title="VBCUA - Concept Analyser",
     page_icon="🎙️",
     layout="wide"
 )
 
-str.title("🎙️ Voice-Based Concept Understanding Analyser")
-str.markdown("""
+st.title("🎙️ Voice-Based Concept Understanding Analyser")
+st.markdown("""
 Evaluate how effectively you understand and explain conceptual topics through spoken communication. 
 This tool measures conceptual accuracy, fluency, delivery metrics, and generates a structured performance report.
 """)
-str.divider()
+st.divider()
 
-left_column, right_column = str.columns(2)
+left_column, right_column = st.columns(2)
 
 with left_column:
-    str.header("📥 Audio Processing Portal")
+    st.header("📥 Audio Processing Portal")
     
-    target_topic = str.selectbox(
+    target_topic = st.selectbox(
         "Choose the concept topic you are explaining:",
         list(REFERENCE_CONCEPTS.keys())
     )
     
-    uploaded_file = str.file_uploader(
+    uploaded_file = st.file_uploader(
         "Upload your spoken explanation audio file (.mp3, .wav, .m4a):",
         type=["mp3", "wav", "m4a"]
     )
@@ -64,85 +60,77 @@ with left_column:
         with open(saved_file_path, "wb") as f:
             f.write(uploaded_file.getbuffer())
             
-        str.success(f"Successfully uploaded: {uploaded_file.name}")
-        str.audio(saved_file_path, format="audio/wav")
+        st.success(f"Successfully uploaded: {uploaded_file.name}")
+        st.audio(saved_file_path, format="audio/wav")
         
-        if str.button("🚀 Analyze Concept Explanation", use_container_width=True):
-            with str.spinner("🤖 Processing voice acoustics and running AI evaluation pipelines..."):
+        if st.button("🚀 Analyze Concept Explanation", use_container_width=True):
+            with st.spinner("🤖 Processing voice acoustics and running AI evaluation pipelines..."):
                 try:
-                    # Save current topic to session state
-                    str.session_state["current_topic"] = target_topic
+                    st.session_state["current_topic"] = target_topic
                     
-                    # 1. Acoustics & Fluency
                     if waveform:
-                        str.session_state["metrics"] = waveform.analyze_audio_fluency(saved_file_path)
-                        str.session_state["chart_path"] = waveform.generate_waveform_plot(saved_file_path)
+                        st.session_state["metrics"] = waveform.analyze_audio_fluency(saved_file_path)
+                        st.session_state["chart_path"] = waveform.generate_waveform_plot(saved_file_path)
                     
-                    # 2. Whisper Speech to Text
                     user_text = ""
                     if speech_to_text:
                         stt_result = speech_to_text.transcribe_audio(saved_file_path)
                         user_text = stt_result.get("text", "")
-                        str.session_state["transcript"] = user_text
+                        st.session_state["transcript"] = user_text
                     
-                    # 3. Sentence-BERT Semantic Analysis
                     if sematic_analysis and user_text:
                         ref_text = REFERENCE_CONCEPTS[target_topic]
-                        str.session_state["evaluation"] = sematic_analysis.evaluate_semantic_similarity(user_text, ref_text)
+                        st.session_state["evaluation"] = sematic_analysis.evaluate_semantic_similarity(user_text, ref_text)
                     
-                    str.session_state["analysis_triggered"] = True
-                    str.rerun()
+                    st.session_state["analysis_triggered"] = True
+                    st.rerun()
                 except Exception as e:
-                    str.error(f"Analysis failed: {str(e)}")
+                    st.error(f"Analysis failed: {str(e)}")
 
 with right_column:
-    str.header("📊 Analytical Report Output")
+    st.header("📊 Analytical Report Output")
     
-    if "analysis_triggered" not in str.session_state:
-        str.info("Upload an audio file on the left panel and click 'Analyze' to review metrics here.")
+    if "analysis_triggered" not in st.session_state:
+        st.info("Upload an audio file on the left panel and click 'Analyze' to review metrics here.")
     else:
-        topic = str.session_state.get("current_topic", "Concept Evaluation")
-        metrics = str.session_state.get("metrics", {})
-        chart_path = str.session_state.get("chart_path", None)
-        transcript = str.session_state.get("transcript", "")
-        evaluation = str.session_state.get("evaluation", {})
+        topic = st.session_state.get("current_topic", "Concept Evaluation")
+        metrics = st.session_state.get("metrics", {})
+        chart_path = st.session_state.get("chart_path", None)
+        transcript = st.session_state.get("transcript", "")
+        evaluation = st.session_state.get("evaluation", {})
         
         if "error" in metrics:
-            str.error(metrics["error"])
+            st.error(metrics["error"])
         else:
-            # Display Extracted Fluency Metrics
-            str.subheader("🔊 Fluency & Delivery Signals")
-            metric_col1, metric_col2, metric_col3 = str.columns(3)
+            st.subheader("🔊 Fluency & Delivery Signals")
+            metric_col1, metric_col2, metric_col3 = st.columns(3)
             metric_col1.metric("Duration", f"{metrics.get('duration_sec')} sec")
             metric_col2.metric("Pause Ratio", f"{int(metrics.get('pause_ratio', 0) * 100)}%")
             metric_col3.metric("RMS Energy (Loudness)", f"{metrics.get('rms_energy')}")
             
-            # Render waveform chart
             if chart_path and os.path.exists(chart_path):
-                str.subheader("📉 Signal Amplitude Waveform")
-                str.image(chart_path, use_container_width=True)
+                st.subheader("📉 Signal Amplitude Waveform")
+                st.image(chart_path, use_container_width=True)
                 
-            str.divider()
+            st.divider()
             
-            # Display live transcript text output
-            str.subheader("📝 Transcription Result")
+            st.subheader("📝 Transcription Result")
             if transcript:
-                str.text_area("Whisper Model Speech-to-Text:", value=transcript, height=100, disabled=True)
+                st.text_area("Whisper Model Speech-to-Text:", value=transcript, height=100, disabled=True)
             else:
-                str.warning("No speech patterns detected in audio file.")
+                st.warning("No speech patterns detected in audio file.")
                 
-            str.divider()
+            st.divider()
             
-            # Display Semantic Scoring Outputs
-            str.subheader("🎯 Conceptual Semantic Evaluation")
+            st.subheader("🎯 Conceptual Semantic Evaluation")
             if "error" in evaluation:
-                str.error(evaluation["error"])
+                st.error(evaluation["error"])
             elif evaluation:
                 score_val = evaluation.get("score", 0.0)
                 level_val = evaluation.get("level", "Unknown")
                 feedback_val = evaluation.get("feedback", "")
                 
-                eval_col1, eval_col2 = str.columns(2)
+                eval_col1, eval_col2 = st.columns(2)
                 eval_col1.metric("Semantic Match Accuracy", f"{score_val}%")
                 
                 if "Strong" in level_val:
@@ -152,12 +140,11 @@ with right_column:
                 else:
                     eval_col2.error(level_val)
                     
-                str.info(f"💡 **AI Feedback:** {feedback_val}")
+                st.info(f"💡 **AI Feedback:** {feedback_val}")
                 
-                # 4. PDF Report Generation Layer
                 if report_generator:
-                    str.divider()
-                    str.subheader("📥 Export Performance Summary")
+                    st.divider()
+                    st.subheader("📥 Export Performance Summary")
                     try:
                         pdf_file_path = report_generator.generate_pdf_report(
                             topic=topic,
@@ -169,12 +156,12 @@ with right_column:
                         
                         if os.path.exists(pdf_file_path):
                             with open(pdf_file_path, "rb") as pdf_file:
-                                str.download_button(
-                                    label="💾 Download Evaluation Report (PDF)",
+                                st.download_button(
+                                    label="Download Evaluation Report (PDF)",
                                     data=pdf_file,
-                                    file_name=f"VBCUA_{topic.replace(' ', '_')}_Report.pdf",
+                                    file_name="Evaluation_Report.pdf",
                                     mime="application/pdf",
                                     use_container_width=True
                                 )
                     except Exception as pdf_error:
-                        str.error(f"Could not build PDF interface: {str(pdf_error)}")
+                        st.error(f"Could not build PDF interface: {str(pdf_error)}")

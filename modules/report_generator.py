@@ -9,13 +9,11 @@ def generate_pdf_report(topic, metrics, transcript, evaluation, chart_path, outp
     Compiles speech analytics, transcript details, and semantic evaluation data 
     into a structured PDF summary file.
     """
-    # Ensure target output folders exist
     os.makedirs(os.path.dirname(output_filename), exist_ok=True)
     
     doc = SimpleDocTemplate(output_filename, pagesize=letter, rightMargin=40, leftMargin=40, topMargin=40, bottomMargin=40)
     story = []
     
-    # Initialize styling framework
     styles = getSampleStyleSheet()
     
     title_style = ParagraphStyle(
@@ -31,20 +29,18 @@ def generate_pdf_report(topic, metrics, transcript, evaluation, chart_path, outp
         leading=14, textColor=colors.HexColor('#333333')
     )
     
-    # Document header components
-    story.append(Paragraph("🎙️ Voice-Based Concept Understanding Analyser (VBCUA)", title_style))
+    story.append(Paragraph("Voice-Based Concept Understanding Analyser (VBCUA)", title_style))
     story.append(Paragraph(f"<b>Target Concept Topic:</b> {topic}", body_style))
     story.append(Spacer(1, 15))
     
-    # 1. Acoustics Performance Summary Matrix
     story.append(Paragraph("1. Fluency & Acoustic Performance Metrics", section_style))
     data = [
-        ['Metric Category', 'Measured Value Value'],
+        ['Metric Category', 'Measured Value'],
         ['Total Speech Duration', f"{metrics.get('duration_sec', 0)} seconds"],
         ['Silence / Pause Ratio', f"{int(metrics.get('pause_ratio', 0) * 100)}%"],
         ['Acoustic Energy Density (RMS)', f"{metrics.get('rms_energy', 0)}"]
     ]
-    t = Table(data, colWidths=[200, 250])
+    t = Table(data, colWidths=[250, 200])
     t.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (1,0), colors.HexColor('#1f77b4')),
         ('TEXTCOLOR', (0,0), (1,0), colors.whitesmoke),
@@ -57,12 +53,10 @@ def generate_pdf_report(topic, metrics, transcript, evaluation, chart_path, outp
     story.append(t)
     story.append(Spacer(1, 15))
     
-    # 2. Textual Transcript Component
     story.append(Paragraph("2. Automated Speech Transcription", section_style))
-    story.append(Paragraph(transcript if transcript else "No structural text recorded.", body_style))
+    story.append(Paragraph(transcript if transcript else "No text recorded.", body_style))
     story.append(Spacer(1, 15))
     
-    # 3. AI Conceptual Understanding Score Output
     story.append(Paragraph("3. Semantic Concept Analysis Evaluation", section_style))
     score = evaluation.get("score", 0.0)
     level = evaluation.get("level", "N/A")
@@ -73,7 +67,6 @@ def generate_pdf_report(topic, metrics, transcript, evaluation, chart_path, outp
     story.append(Paragraph(f"<b>AI Insight Assessment:</b> {feedback}", body_style))
     story.append(Spacer(1, 15))
     
-    # 4. Waveform Visualization Chart Embedding
     if chart_path and os.path.exists(chart_path):
         story.append(Paragraph("4. Speech Amplitude Signal Waveform", section_style))
         story.append(Image(chart_path, width=450, height=135))
