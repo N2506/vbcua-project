@@ -21,10 +21,12 @@ try:
     import waveform
     import speech_to_text
     import sematic_analysis
+    import report_generator
 except ImportError:
     waveform = None
     speech_to_text = None
     sematic_analysis = None
+    report_generator = None
 
 # Configure dashboard
 str.set_page_config(
@@ -68,6 +70,9 @@ with left_column:
         if str.button("🚀 Analyze Concept Explanation", use_container_width=True):
             with str.spinner("🤖 Processing voice acoustics and running AI evaluation pipelines..."):
                 try:
+                    # Save current topic to session state
+                    str.session_state["current_topic"] = target_topic
+                    
                     # 1. Acoustics & Fluency
                     if waveform:
                         str.session_state["metrics"] = waveform.analyze_audio_fluency(saved_file_path)
@@ -96,6 +101,7 @@ with right_column:
     if "analysis_triggered" not in str.session_state:
         str.info("Upload an audio file on the left panel and click 'Analyze' to review metrics here.")
     else:
+        topic = str.session_state.get("current_topic", "Concept Evaluation")
         metrics = str.session_state.get("metrics", {})
         chart_path = str.session_state.get("chart_path", None)
         transcript = str.session_state.get("transcript", "")
@@ -147,3 +153,28 @@ with right_column:
                     eval_col2.error(level_val)
                     
                 str.info(f"💡 **AI Feedback:** {feedback_val}")
+                
+                # 4. PDF Report Generation Layer
+                if report_generator:
+                    str.divider()
+                    str.subheader("📥 Export Performance Summary")
+                    try:
+                        pdf_file_path = report_generator.generate_pdf_report(
+                            topic=topic,
+                            metrics=metrics,
+                            transcript=transcript,
+                            evaluation=evaluation,
+                            chart_path=chart_path
+                        )
+                        
+                        if os.path.exists(pdf_file_path):
+                            with open(pdf_file_path, "rb") as pdf_file:
+                                str.download_button(
+                                    label="💾 Download Evaluation Report (PDF)",
+                                    data=pdf_file,
+                                    file_name=f"VBCUA_{topic.replace(' ', '_')}_Report.pdf",
+                                    mime="application/pdf",
+                                    use_container_width=True
+                                )
+                    except Exception as pdf_error:
+                        str.error(f"Could not build PDF interface: {str(pdf_error)}")
