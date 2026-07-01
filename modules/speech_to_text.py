@@ -1,29 +1,23 @@
 import os
-import whisper
+from transformers import pipeline
 
-def transcribe_audio(file_path, model_size="base"):
+def transcribe_audio(file_path):
     """
-    Loads an audio file and transcribes it into text using OpenAI Whisper.
-    Returns a dictionary with the raw transcript text.
+    Transcribes an audio file into text using a stable Hugging Face pipeline.
     """
     if not os.path.exists(file_path):
         return {"error": f"Audio file not found at {file_path}"}
         
     try:
-        # Load the specified Whisper model size (base is lightweight and accurate)
-        model = whisper.load_model(model_size)
+        # Initialize an automatic speech recognition pipeline using a fast, robust model checkpoint
+        asr_pipe = pipeline("automatic-speech-recognition", model="openai/whisper-tiny.en")
         
-        # Run transcription pipeline
-        result = model.transcribe(file_path)
+        # Process the transcription block
+        result = asr_pipe(file_path)
         
         return {
             "text": result.get("text", "").strip(),
-            "language": result.get("language", "en")
+            "language": "en"
         }
     except Exception as e:
-        return {"error": f"Transcription engine error: {str(e)}"}
-
-# Quick standalone test code block
-if __name__ == "__main__":
-    # Test with a placeholder file if executed directly
-    print("Whisper Speech-to-Text Module Initialized.")
+        return {"error": f"Transcription pipeline failure: {str(e)}"}

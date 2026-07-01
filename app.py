@@ -24,6 +24,7 @@ try:
     import feedback
     import report_generator
     import waveform
+    import database_logger
 except ImportError as e:
     st.error(f"Module Loading Error: {str(e)}")
 
@@ -66,7 +67,17 @@ with left_panel:
                 st.session_state["fluency"] = feedback.analyze_speech_fluency(transcript, acoustics.get("pause_ratio", 0))
                 
                 # 4. Deep Learning Similarity Metrics
-                st.session_state["semantic"] = sematic_analysis.evaluate_semantic_similarity(transcript, REFERENCE_CONCEPTS[topic])
+                semantic = sematic_analysis.evaluate_semantic_similarity(transcript, REFERENCE_CONCEPTS[topic])
+                st.session_state["semantic"] = semantic
+                
+                # 5. Log data live to MySQL Tables
+                if database_logger:
+                    database_logger.log_evaluation_session(
+                        topic=topic,
+                        metrics=acoustics,
+                        transcript=transcript,
+                        evaluation=semantic
+                    )
                 
                 st.session_state["run_complete"] = True
                 st.rerun()
@@ -118,7 +129,6 @@ with right_panel:
             st.divider()
             st.subheader("📥 Export Performance Summary")
             try:
-                # Mock evaluation dictionary matching the expected structure of report_generator
                 eval_dict = {
                     "score": semantic.get("score"),
                     "level": semantic.get("level"),
