@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 # Handle relative import paths correctly regardless of project entry execution vector
 from modules.speech_to_text import transcribe_audio
-from modules.audio_analysis import analyze_audio_features
+from modules.audio_analysis import analyze_audio
 from modules.sematic_analysis import evaluate_semantic_similarity
 from modules.scoring import calculate_composite_score
 from modules.report_generator import generate_pdf_report
@@ -21,7 +21,7 @@ st.title("🎙️ Voice-Based Concept Understanding Analyser")
 st.markdown("---")
 
 # Setup split dashboard column layouts
-left_column, right_column = st.columns([1, 1])
+left_column, right_column = st.columns()
 
 with left_column:
     st.header("📥 Audio Processing Portal")
@@ -70,7 +70,7 @@ with left_column:
                     extracted_text = transcription_result.get("text", "")
                     
                     # Compute feature dimensions and low-level physical properties
-                    audio_metrics = analyze_audio_features(temp_audio_path, extracted_text)
+                    audio_metrics = analyze_audio(temp_audio_path, extracted_text)
                     
                     # Compute semantic embedding cosine tensor weights vs ground-truths
                     semantic_score = evaluate_semantic_similarity(extracted_text, target_benchmark)
