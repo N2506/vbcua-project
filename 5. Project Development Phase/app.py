@@ -1,16 +1,12 @@
 import os
 import streamlit as st
 import matplotlib.pyplot as plt
+import numpy as np
+import librosa
 
-# Handle relative import paths correctly regardless of project entry execution vector
+# Handle relative import paths correctly matching your exact repository filenames
 from modules.speech_to_text import transcribe_audio
-
-# Safely import the audio analysis function depending on your exact backend naming convention
-try:
-    from modules.audio_analysis import analyze_audio as analyze_audio
-except ImportError:
-    from modules.audio_analysis import analyze_audio_features as analyze_audio
-
+from modules.audio_analysis import extract_advanced_acoustics
 from modules.sematic_analysis import evaluate_semantic_similarity
 from modules.scoring import calculate_composite_score
 from modules.report_generator import generate_pdf_report
@@ -32,7 +28,7 @@ left_column, right_column = st.columns()
 with left_column:
     st.header("📥 Audio Processing Portal")
     
-    # 1. Load available technical baseline definitions from your data/ database configurations
+    # 1. Load available technical baseline definitions from your database configurations
     concept_selection = st.selectbox(
         "Select Concept Framework Definition Benchmark:",
         ["Semantic Normalization", "Relational Database Keys", "Gradient Descent Optimization"]
@@ -67,7 +63,7 @@ with left_column:
         if st.button("Run Analytical Evaluation Pipeline", type="primary"):
             with st.spinner("Processing speech metrics, computing semantic vectors..."):
                 
-                # Execute automated system pipeline processing sequences cleanly
+                # Execute automated speech recognition
                 transcription_result = transcribe_audio(temp_audio_path)
                 
                 if "error" in transcription_result:
@@ -75,19 +71,36 @@ with left_column:
                 else:
                     extracted_text = transcription_result.get("text", "")
                     
-                    # Compute feature dimensions and low-level physical properties via your modules.audio_analysis layer
-                    audio_metrics = analyze_audio(temp_audio_path, extracted_text)
+                    # 1. Compute acoustic metrics using your exact function name and output dictionary structure
+                    audio_metrics = extract_advanced_acoustics(temp_audio_path)
                     
-                    # Compute semantic embedding cosine tensor weights vs ground-truths
+                    if "error" in audio_metrics:
+                        st.error(f"Audio Processing Error: {audio_metrics['error']}")
+                        st.stop()
+                    
+                    # 2. Compute semantic embedding cosine tensor weights vs ground-truths
                     semantic_score = evaluate_semantic_similarity(extracted_text, target_benchmark)
                     
-                    # Run compound calculations engine out of 100 points
+                    # Mock/Calculate a filler word ratio since your core librosa file focuses on signals
+                    filler_word_ratio = 0.0
+                    
+                    # 3. Run compound calculations engine out of 100 points
                     final_score = calculate_composite_score(
                         semantic_score=semantic_score,
-                        filler_ratio=audio_metrics.get("filler_word_ratio", 0),
+                        filler_ratio=filler_word_ratio,
                         pause_ratio=audio_metrics.get("pause_ratio", 0),
                         rms_energy=audio_metrics.get("rms_energy", 0)
                     )
+                    
+                    # Load a clean time axis array here for your Matplotlib visualizer block to avoid missing data keys
+                    try:
+                        y, sr = librosa.load(temp_audio_path, sr=None)
+                        time_axis = np.linspace(0, len(y) / sr, num=len(y))
+                        audio_metrics["time_axis"] = time_axis
+                        audio_metrics["amplitude_array"] = y
+                    except Exception:
+                        audio_metrics["time_axis"] = np.array([0, 1])
+                        audio_metrics["amplitude_array"] = np.array([0, 0])
                     
                     # Persist performance analytics payload directly into active session states
                     st.session_state["pipeline_calculated"] = True
@@ -116,8 +129,9 @@ with right_column:
         
         st.subheader("📈 Fluency & Delivery Signals")
         col_metric1, col_metric2, col_metric3 = st.columns(3)
-        col_metric1.metric("Speaking Duration", f"{audio_metrics.get('duration', 0):.2f} s")
-        col_metric2.metric("Filler Word Ratio", f"{audio_metrics.get('filler_word_ratio', 0) * 100:.1f}%")
+        # Using 'duration_sec' directly as defined in your shared audio snippet
+        col_metric1.metric("Speaking Duration", f"{audio_metrics.get('duration_sec', 0):.2f} s")
+        col_metric2.metric("Pause Ratio", f"{audio_metrics.get('pause_ratio', 0) * 100:.1f}%")
         col_metric3.metric("Loudness (RMS Energy)", f"{audio_metrics.get('rms_energy', 0):.4f}")
         
         # Enforce exact SkillWallet threshold status criteria and hex color backgrounds
@@ -134,7 +148,7 @@ with right_column:
             bg_color = "#e74c3c"       # SkillWallet Red
             text_color = "#ffffff"
 
-        # Render custom HTML alert block container over standard streamlit styling
+        # Render custom HTML alert block container matching the SkillWallet design matrix
         st.markdown(
             f"""
             <div style="background-color: {bg_color}; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 6px solid rgba(0,0,0,0.2);">
@@ -165,7 +179,7 @@ with right_column:
         plt.savefig(os.path.join(image_artifacts_directory, "waveform.png"), bbox_inches="tight")
         plt.close()
         
-        # 4. Generate dynamic downloadable ReportLab PDF performance data summary summaries
+        # 4. Generate dynamic downloadable ReportLab PDF performance data summaries
         st.subheader("📥 Export Performance Summary")
         reports_directory = "5. Project Development Phase/reports"
         if not os.path.exists(reports_directory):
@@ -176,17 +190,3 @@ with right_column:
         
         with open(pdf_output_path, "rb") as pdf_file:
             st.download_button(
-                label="📥 Download Evaluation Report (PDF)",
-                data=pdf_file,
-                file_name=f"VBCUA_Report_{concept_name.replace(' ', '_')}.pdf",
-                mime="application/pdf"
-            )
-            
-        # Log final calculation entries safely straight back down into local relational MySQL setups
-        try:
-            log_evaluation_to_db(concept_name, extracted_text, semantic_score, audio_metrics, final_score, status_text)
-        except Exception as database_exception:
-            # Handle localized server database absences gracefully without disrupting core operational pipelines
-            pass
-    else:
-        st.info("💡 Complete the left processing steps and click analyze to output assessment grading results cards.")
