@@ -25,7 +25,7 @@ st.markdown("---")
 # Setup split dashboard column layouts (Explicitly specifying 2 columns)
 left_column, right_column = st.columns(2)
 
-# Define baseline directory structure metrics safely using absolute path strings
+# FORCE an absolute baseline directory path to protect against empty strings
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 if "pipeline_calculated" not in st.session_state:
@@ -34,13 +34,11 @@ if "pipeline_calculated" not in st.session_state:
 with left_column:
     st.header("📥 Audio Processing Portal")
     
-    # Load available technical baseline definitions from your database configurations
     concept_selection = st.selectbox(
         "Select Concept Framework Definition Benchmark:",
         ["Semantic Normalization", "Relational Database Keys", "Gradient Descent Optimization"]
     )
     
-    # Set static placeholder text ground-truths based on selection for baseline scoring matching
     ground_truths = {
         "Semantic Normalization": "Structuring data to reduce redundancy and improve data integrity.",
         "Relational Database Keys": "A primary key is a unique identifier for a relational database table row records.",
@@ -50,26 +48,23 @@ with left_column:
     
     st.info(f"**Benchmark Definition Baseline:** {target_benchmark}")
     
-    # Interactive Media Capture Controls (Drag and drop file uploader)
     uploaded_file = st.file_uploader("Upload Student Audio Performance Answer (.wav):", type=["wav"])
     
     if uploaded_file is not None:
         st.audio(uploaded_file, format="audio/wav")
         
-        # Enforce absolute path creation for uploads directory
-        upload_directory = os.path.join(BASE_DIR, "uploads")
+        # Enforce clean absolute paths for the uploads directory
+        upload_directory = os.path.abspath(os.path.join(BASE_DIR, "uploads"))
         if not os.path.exists(upload_directory):
             os.makedirs(upload_directory, exist_ok=True)
             
-        temp_audio_path = os.path.join(upload_directory, uploaded_file.name)
+        temp_audio_path = os.path.abspath(os.path.join(upload_directory, uploaded_file.name))
         with open(temp_audio_path, "wb") as file_buffer:
             file_buffer.write(uploaded_file.getbuffer())
             
-        # Core Pipeline Triggers Action Button Element
         if st.button("Run Analytical Evaluation Pipeline", type="primary"):
             with st.spinner("Processing speech metrics, computing semantic vectors..."):
                 
-                # Execute automated speech recognition
                 transcription_result = transcribe_audio(temp_audio_path)
                 
                 if "error" in transcription_result:
@@ -77,17 +72,14 @@ with left_column:
                 else:
                     extracted_text = transcription_result.get("text", "")
                     
-                    # 1. Compute acoustic metrics using your audio_analysis module
                     audio_metrics = extract_advanced_acoustics(temp_audio_path)
                     
                     if "error" in audio_metrics:
                         st.error(f"Audio Processing Error: {audio_metrics['error']}")
                         st.stop()
                     
-                    # 2. Compute semantic embedding cosine tensor weights vs ground-truths
                     semantic_output = evaluate_semantic_similarity(extracted_text, target_benchmark)
                     
-                    # Safely extract the raw float value if the semantic output returned a dictionary template
                     if isinstance(semantic_output, dict):
                         if "error" in semantic_output:
                             st.error(f"Semantic Analyzer Error: {semantic_output['error']}")
@@ -96,10 +88,8 @@ with left_column:
                     else:
                         semantic_score = semantic_output
                     
-                    # Mock/Calculate a filler word ratio since your core librosa file focuses on signals
                     filler_word_ratio = 0.0
                     
-                    # 3. Call your exact evaluate_understanding function with verified parameters
                     scoring_result = evaluate_understanding(
                         similarity=semantic_score,
                         filler_ratio=filler_word_ratio,
@@ -110,7 +100,6 @@ with left_column:
                     status_text = scoring_result.get("level", "Moderate Understanding")
                     qualitative_feedback = scoring_result.get("feedback", "")
                     
-                    # Load a clean time axis array here for your Matplotlib visualizer block to avoid missing data keys
                     try:
                         y, sr = librosa.load(temp_audio_path, sr=None)
                         time_axis = np.linspace(0, len(y) / sr, num=len(y))
@@ -120,7 +109,6 @@ with left_column:
                         audio_metrics["time_axis"] = np.array([])
                         audio_metrics["amplitude_array"] = np.array([])
                     
-                    # Persist performance analytics payload directly into active session states
                     st.session_state["pipeline_calculated"] = True
                     st.session_state["extracted_text"] = extracted_text
                     st.session_state["audio_metrics"] = audio_metrics
@@ -135,7 +123,6 @@ with right_column:
     st.header("📊 Analytical Report Output")
     
     if st.session_state.get("pipeline_calculated", False):
-        # Unpack active session variables
         extracted_text = st.session_state["extracted_text"]
         audio_metrics = st.session_state["audio_metrics"]
         scoring_result = st.session_state["scoring_result"]
@@ -145,7 +132,6 @@ with right_column:
         concept_name = st.session_state["concept_name"]
         temp_audio_path = st.session_state["temp_audio_path"]
         
-        # Display extracted delivery details
         st.subheader("📝 Automated Speech Transcription")
         st.text_area("Decoded Answer String Matrix:", value=extracted_text, height=100, disabled=True)
         
@@ -155,18 +141,16 @@ with right_column:
         col_metric2.metric("Pause Ratio", f"{audio_metrics.get('pause_ratio', 0) * 100:.1f}%")
         col_metric3.metric("Loudness (RMS Energy)", f"{audio_metrics.get('rms_energy', 0):.4f}")
         
-        # Enforce exact SkillWallet threshold status criteria and hex color backgrounds
         if final_score >= 80:
-            bg_color = "#2ecc71"       # SkillWallet Green
+            bg_color = "#2ecc71"
             text_color = "#ffffff"
         elif final_score >= 50:
-            bg_color = "#f39c12"       # SkillWallet Orange
+            bg_color = "#f39c12"
             text_color = "#ffffff"
         else:
-            bg_color = "#e74c3c"       # SkillWallet Red
+            bg_color = "#e74c3c"
             text_color = "#ffffff"
 
-        # Render custom HTML alert block container matching the SkillWallet design matrix
         st.markdown(
             f"""
             <div style="background-color: {bg_color}; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 6px solid rgba(0,0,0,0.2);">
@@ -181,7 +165,6 @@ with right_column:
             unsafe_allow_html=True
         )
         
-        # Render responsive Matplotlib Waveform Charts
         st.subheader("🌊 Signal Amplitude Waveform")
         fig, ax = plt.subplots(figsize=(10, 3.5))
         ax.plot(audio_metrics.get("time_axis"), audio_metrics.get("amplitude_array"), color="#2980b9", alpha=0.85)
@@ -191,8 +174,8 @@ with right_column:
         ax.grid(True, linestyle="--", alpha=0.5)
         st.pyplot(fig)
 
-        # Save output graphic to static artifacts folders path using absolute directory path structures
-        image_artifacts_directory = os.path.join(BASE_DIR, "images")
+        # Enforce absolute path creation for images directory
+        image_artifacts_directory = os.path.abspath(os.path.join(BASE_DIR, "images"))
         if not os.path.exists(image_artifacts_directory):
             os.makedirs(image_artifacts_directory, exist_ok=True)
         plt.savefig(os.path.join(image_artifacts_directory, "waveform.png"), bbox_inches="tight")
@@ -201,14 +184,12 @@ with right_column:
         st.info("💡 Complete the left processing steps and click analyze to output assessment grading results cards.")
 
 # -----------------------------------------------------------------------------
-# FIXED ACTION: Render PDF Download Area across the full wide page layout,
-# completely outside the columns so it is visible immediately under the graph!
+# FIXED ACTION: Force absolute paths everywhere so os.path.dirname is NEVER empty!
 # -----------------------------------------------------------------------------
 if st.session_state.get("pipeline_calculated", False):
     st.markdown("---")
     st.header("📥 Export Performance Summary")
     
-    # Re-fetch variables for safety
     concept_name = st.session_state["concept_name"]
     final_score = st.session_state["final_score"]
     status_text = st.session_state["status_text"]
@@ -216,14 +197,17 @@ if st.session_state.get("pipeline_calculated", False):
     extracted_text = st.session_state["extracted_text"]
     scoring_result = st.session_state["scoring_result"]
 
-    reports_directory = os.path.join(BASE_DIR, "reports")
+    # FORCE complete system absolute paths to bypass the empty string bug
+        # FORCE complete system absolute paths to bypass the empty string bug
+    reports_directory = os.path.abspath(os.path.join(BASE_DIR, "reports"))
     if not os.path.exists(reports_directory):
         os.makedirs(reports_directory, exist_ok=True)
         
-    pdf_output_path = os.path.join(reports_directory, "evaluation_report.pdf")
+    pdf_output_path = os.path.abspath(os.path.join(reports_directory, "evaluation_report.pdf"))
+    
+    # Generate the PDF safely
     generate_pdf_report(pdf_output_path, concept_name, final_score, status_text, audio_metrics, extracted_text)
     
-    # Display the large, highly interactive download button block
     with open(pdf_output_path, "rb") as pdf_file:
         st.download_button(
             label="📥 Click Here to Download Evaluation Report (PDF)",
@@ -233,7 +217,6 @@ if st.session_state.get("pipeline_calculated", False):
             type="primary"
         )
         
-    # Log database metrics safely
     try:
         log_evaluation_session(
             topic=concept_name,
