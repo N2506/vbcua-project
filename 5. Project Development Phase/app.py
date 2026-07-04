@@ -2,9 +2,15 @@ import os
 import streamlit as st
 import matplotlib.pyplot as plt
 
-# Handle relative import paths matching your exact repository filenames
+# Handle relative import paths correctly regardless of project entry execution vector
 from modules.speech_to_text import transcribe_audio
-from modules.audio_analysis import analyze_audio
+
+# Safely import the audio analysis function depending on your exact backend naming convention
+try:
+    from modules.audio_analysis import analyze_audio as analyze_audio
+except ImportError:
+    from modules.audio_analysis import analyze_audio_features as analyze_audio
+
 from modules.sematic_analysis import evaluate_semantic_similarity
 from modules.scoring import calculate_composite_score
 from modules.report_generator import generate_pdf_report
