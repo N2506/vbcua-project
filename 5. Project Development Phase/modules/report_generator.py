@@ -9,7 +9,10 @@ def generate_pdf_report(topic, metrics, transcript, evaluation, chart_path, outp
     Compiles speech analytics, transcript details, and semantic evaluation data 
     into a structured PDF summary file.
     """
-    os.makedirs(os.path.dirname(output_filename), exist_ok=True)
+    # Safeguard directory creation against empty path evaluations
+    dir_name = os.path.dirname(os.path.abspath(output_filename))
+    if dir_name:
+        os.makedirs(dir_name, exist_ok=True)
     
     doc = SimpleDocTemplate(output_filename, pagesize=letter, rightMargin=40, leftMargin=40, topMargin=40, bottomMargin=40)
     story = []

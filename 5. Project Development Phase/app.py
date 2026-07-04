@@ -25,7 +25,7 @@ st.markdown("---")
 # Setup split dashboard column layouts (Explicitly specifying 2 columns)
 left_column, right_column = st.columns(2)
 
-# FORCE an absolute baseline directory path to protect against empty strings
+# Define baseline directory structure metrics safely using absolute path strings
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 if "pipeline_calculated" not in st.session_state:
@@ -53,7 +53,6 @@ with left_column:
     if uploaded_file is not None:
         st.audio(uploaded_file, format="audio/wav")
         
-        # Enforce clean absolute paths for the uploads directory
         upload_directory = os.path.abspath(os.path.join(BASE_DIR, "uploads"))
         if not os.path.exists(upload_directory):
             os.makedirs(upload_directory, exist_ok=True)
@@ -174,7 +173,6 @@ with right_column:
         ax.grid(True, linestyle="--", alpha=0.5)
         st.pyplot(fig)
 
-        # Enforce absolute path creation for images directory
         image_artifacts_directory = os.path.abspath(os.path.join(BASE_DIR, "images"))
         if not os.path.exists(image_artifacts_directory):
             os.makedirs(image_artifacts_directory, exist_ok=True)
@@ -184,7 +182,7 @@ with right_column:
         st.info("💡 Complete the left processing steps and click analyze to output assessment grading results cards.")
 
 # -----------------------------------------------------------------------------
-# FIXED ACTION: Force absolute paths everywhere so os.path.dirname is NEVER empty!
+# FIXED ARGS PACKING: Align call order to match generate_pdf_report exactly!
 # -----------------------------------------------------------------------------
 if st.session_state.get("pipeline_calculated", False):
     st.markdown("---")
@@ -197,16 +195,21 @@ if st.session_state.get("pipeline_calculated", False):
     extracted_text = st.session_state["extracted_text"]
     scoring_result = st.session_state["scoring_result"]
 
-    # FORCE complete system absolute paths to bypass the empty string bug
-        # FORCE complete system absolute paths to bypass the empty string bug
     reports_directory = os.path.abspath(os.path.join(BASE_DIR, "reports"))
     if not os.path.exists(reports_directory):
         os.makedirs(reports_directory, exist_ok=True)
-        
-    pdf_output_path = os.path.abspath(os.path.join(reports_directory, "evaluation_report.pdf"))
+        pdf_output_path = os.path.abspath(os.path.join(reports_directory, "evaluation_report.pdf"))
+    waveform_image_path = os.path.abspath(os.path.join(BASE_DIR, "images", "waveform.png"))
     
-    # Generate the PDF safely
-    generate_pdf_report(pdf_output_path, concept_name, final_score, status_text, audio_metrics, extracted_text)
+    # Executing function call aligned with the report generator parameters order
+    generate_pdf_report(
+        topic=concept_name,
+        metrics=audio_metrics,
+        transcript=extracted_text,
+        evaluation=scoring_result,
+        chart_path=waveform_image_path,
+        output_filename=pdf_output_path
+    )
     
     with open(pdf_output_path, "rb") as pdf_file:
         st.download_button(
@@ -227,3 +230,4 @@ if st.session_state.get("pipeline_calculated", False):
     except Exception:
         pass
 
+        
