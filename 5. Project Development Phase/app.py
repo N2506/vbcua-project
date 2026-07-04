@@ -4,11 +4,28 @@ import matplotlib.pyplot as plt
 import numpy as np
 import librosa
 
-# Handle relative import paths correctly matching your exact repository filenames
+# 1. Handle relative import paths correctly matching your exact repository filenames
 from modules.speech_to_text import transcribe_audio
-from modules.audio_analysis import extract_advanced_acoustics
+
+# 2. Safely import the audio analysis function depending on your exact backend naming convention
+try:
+    from modules.audio_analysis import extract_advanced_acoustics
+except ImportError:
+    try:
+        from modules.audio_analysis import analyze_audio as extract_advanced_acoustics
+    except ImportError:
+        from modules.audio_analysis import analyze_audio_features as extract_advanced_acoustics
+
+# 3. Handle semantic analysis script imports
 from modules.sematic_analysis import evaluate_semantic_similarity
-from modules.scoring import calculate_composite_score
+
+# 4. Safely import the scoring engine function under a unified caller name to catch any backend differences
+try:
+    from modules.scoring import calculate_composite_score
+except ImportError:
+    from modules.scoring import calculate_score as calculate_composite_score
+
+# 5. Handle reporting and logging system modules
 from modules.report_generator import generate_pdf_report
 from modules.database_logger import log_evaluation_to_db
 
@@ -28,7 +45,7 @@ left_column, right_column = st.columns()
 with left_column:
     st.header("📥 Audio Processing Portal")
     
-    # 1. Load available technical baseline definitions from your database configurations
+    # Load available technical baseline definitions from your database configurations
     concept_selection = st.selectbox(
         "Select Concept Framework Definition Benchmark:",
         ["Semantic Normalization", "Relational Database Keys", "Gradient Descent Optimization"]
@@ -44,7 +61,7 @@ with left_column:
     
     st.info(f"**Benchmark Definition Baseline:** {target_benchmark}")
     
-    # 2. Interactive Media Capture Controls (Drag and drop file uploader)
+    # Interactive Media Capture Controls (Drag and drop file uploader)
     uploaded_file = st.file_uploader("Upload Student Audio Performance Answer (.wav):", type=["wav"])
     
     if uploaded_file is not None:
@@ -71,25 +88,28 @@ with left_column:
                 else:
                     extracted_text = transcription_result.get("text", "")
                     
-                    # 1. Compute acoustic metrics using your exact function name and output dictionary structure
+                    # Compute acoustic metrics using the error-protected structural function configuration
                     audio_metrics = extract_advanced_acoustics(temp_audio_path)
                     
                     if "error" in audio_metrics:
                         st.error(f"Audio Processing Error: {audio_metrics['error']}")
                         st.stop()
                     
-                    # 2. Compute semantic embedding cosine tensor weights vs ground-truths
+                    # Compute semantic embedding cosine tensor weights vs ground-truths
                     semantic_score = evaluate_semantic_similarity(extracted_text, target_benchmark)
                     
                     # Mock/Calculate a filler word ratio since your core librosa file focuses on signals
                     filler_word_ratio = 0.0
                     
-                    # 3. Run compound calculations engine out of 100 points
+                    # Run compound calculation metrics with structural fallbacks for return keys
+                    p_ratio = audio_metrics.get("pause_ratio", 0) if audio_metrics.get("pause_ratio") is not None else 0
+                    rms_val = audio_metrics.get("rms_energy", 0) if audio_metrics.get("rms_energy") is not None else 0
+                    
                     final_score = calculate_composite_score(
                         semantic_score=semantic_score,
                         filler_ratio=filler_word_ratio,
-                        pause_ratio=audio_metrics.get("pause_ratio", 0),
-                        rms_energy=audio_metrics.get("rms_energy", 0)
+                        pause_ratio=p_ratio,
+                        rms_energy=rms_val
                     )
                     
                     # Load a clean time axis array here for your Matplotlib visualizer block to avoid missing data keys
@@ -129,9 +149,15 @@ with right_column:
         
         st.subheader("📈 Fluency & Delivery Signals")
         col_metric1, col_metric2, col_metric3 = st.columns(3)
-        col_metric1.metric("Speaking Duration", f"{audio_metrics.get('duration_sec', 0):.2f} s")
-        col_metric2.metric("Pause Ratio", f"{audio_metrics.get('pause_ratio', 0) * 100:.1f}%")
-        col_metric3.metric("Loudness (RMS Energy)", f"{audio_metrics.get('rms_energy', 0):.4f}")
+        
+        # Support fallback display keys safely for both naming conventions ('duration' vs 'duration_sec')
+        dur_val = audio_metrics.get('duration_sec', audio_metrics.get('duration', 0))
+        p_ratio_val = audio_metrics.get('pause_ratio', 0)
+        rms_val = audio_metrics.get('rms_energy', 0)
+        
+        col_metric1.metric("Speaking Duration", f"{dur_val:.2f} s")
+        col_metric2.metric("Pause Ratio", f"{p_ratio_val * 100:.1f}%")
+        col_metric3.metric("Loudness (RMS Energy)", f"{rms_val:.4f}")
         
         # Enforce exact SkillWallet threshold status criteria and hex color backgrounds
         if final_score >= 80:
@@ -171,24 +197,3 @@ with right_column:
         ax.grid(True, linestyle="--", alpha=0.5)
         st.pyplot(fig)
         
-        # Save output graphic to static artifacts folders path for PDF packaging usage
-        image_artifacts_directory = "5. Project Development Phase/images"
-        if not os.path.exists(image_artifacts_directory):
-            os.makedirs(image_artifacts_directory)
-        plt.savefig(os.path.join(image_artifacts_directory, "waveform.png"), bbox_inches="tight")
-        plt.close()
-        
-        # 4. Generate dynamic downloadable ReportLab PDF performance data summaries
-        st.subheader("📥 Export Performance Summary")
-        reports_directory = "5. Project Development Phase/reports"
-        if not os.path.exists(reports_directory):
-            os.makedirs(reports_directory)
-            
-        pdf_output_path = os.path.join(reports_directory, "evaluation_report.pdf")
-        generate_pdf_report(pdf_output_path, concept_name, final_score, status_text, audio_metrics, extracted_text)
-        
-        with open(pdf_output_path, "rb") as pdf_file:
-            st.download_button(
-                label="📥 Download Evaluation Report (PDF)",
-                data=pdf_file,
-            )
