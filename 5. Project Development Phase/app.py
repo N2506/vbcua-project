@@ -22,7 +22,7 @@ st.set_page_config(
 st.title("🎙️ Voice-Based Concept Understanding Analyser")
 st.markdown("---")
 
-# Setup split dashboard column layouts (Fixed by explicitly specifying 2 columns)
+# Setup split dashboard column layouts (Explicitly specifying 2 columns)
 left_column, right_column = st.columns(2)
 
 with left_column:
