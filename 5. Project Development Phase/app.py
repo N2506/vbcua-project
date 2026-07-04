@@ -79,12 +79,21 @@ with left_column:
                         st.stop()
                     
                     # 2. Compute semantic embedding cosine tensor weights vs ground-truths
-                    semantic_score = evaluate_semantic_similarity(extracted_text, target_benchmark)
+                    semantic_output = evaluate_semantic_similarity(extracted_text, target_benchmark)
+                    
+                    # Safely extract the raw float value if the semantic output returned a dictionary template
+                    if isinstance(semantic_output, dict):
+                        if "error" in semantic_output:
+                            st.error(f"Semantic Analyzer Error: {semantic_output['error']}")
+                            st.stop()
+                        semantic_score = semantic_output.get("similarity_score", semantic_output.get("score", 0.0))
+                    else:
+                        semantic_score = semantic_output
                     
                     # Mock/Calculate a filler word ratio since your core librosa file focuses on signals
                     filler_word_ratio = 0.0
                     
-                    # 3. Call your exact evaluate_understanding function with required parameters
+                    # 3. Call your exact evaluate_understanding function with verified parameters
                     scoring_result = evaluate_understanding(
                         similarity=semantic_score,
                         filler_ratio=filler_word_ratio,
@@ -177,16 +186,3 @@ with right_column:
         st.pyplot(fig)
         
         # Save output graphic to static artifacts folders path for PDF packaging usage
-        image_artifacts_directory = "5. Project Development Phase/images"
-        if not os.path.exists(image_artifacts_directory):
-            os.makedirs(image_artifacts_directory)
-        plt.savefig(os.path.join(image_artifacts_directory, "waveform.png"), bbox_inches="tight")
-        plt.close()
-        
-        # Generate dynamic downloadable ReportLab PDF performance data summaries
-        st.subheader("📥 Export Performance Summary")
-        reports_directory = "5. Project Development Phase/reports"
-        if not os.path.exists(reports_directory):
-            os.makedirs(reports_directory)
-            
-
