@@ -1,0 +1,3 @@
+ System Pipeline Flow Chart 
+ [User Audio Input (.wav)]│▼[audio_analysis.py] ───────► (Extract Pause Ratio & RMS Energy Telemetry)│▼[speech_to_text.py] ───────► (Cached Whisper ASR Text Decoding)│▼[sematic_analysis.py] ─────► (SBERT Cosine Tensor Mapping vs Benchmarks)│▼[scoring.py] ──────────────► (Composite 100-Point Algorithmic Evaluation)│▼[database_logger.py] ──────► (Log Analytics Meta into Local MySQL Instance)│▼[report_generator.py] ─────► (ReportLab Dynamic PDF Canvas Assembly)
+ 
