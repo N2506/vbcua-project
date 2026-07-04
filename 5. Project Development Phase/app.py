@@ -28,6 +28,9 @@ left_column, right_column = st.columns(2)
 # Define baseline directory structure metrics safely using absolute path strings
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+if "pipeline_calculated" not in st.session_state:
+    st.session_state["pipeline_calculated"] = False
+
 with left_column:
     st.header("📥 Audio Processing Portal")
     
@@ -187,7 +190,8 @@ with right_column:
         ax.set_ylabel("Amplitude", fontsize=9)
         ax.grid(True, linestyle="--", alpha=0.5)
         st.pyplot(fig)
-               # Save output graphic to static artifacts folders path using absolute directory path structures
+
+        # Save output graphic to static artifacts folders path using absolute directory path structures
         image_artifacts_directory = os.path.join(BASE_DIR, "images")
         if not os.path.exists(image_artifacts_directory):
             os.makedirs(image_artifacts_directory, exist_ok=True)
@@ -240,5 +244,3 @@ if st.session_state.get("pipeline_calculated", False):
     except Exception:
         pass
 
-
-     
