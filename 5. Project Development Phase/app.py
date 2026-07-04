@@ -22,8 +22,8 @@ st.set_page_config(
 st.title("🎙️ Voice-Based Concept Understanding Analyser")
 st.markdown("---")
 
-# Setup split dashboard column layouts
-left_column, right_column = st.columns()
+# Setup split dashboard column layouts (Fixed by explicitly specifying 2 columns)
+left_column, right_column = st.columns(2)
 
 with left_column:
     st.header("📥 Audio Processing Portal")
@@ -187,5 +187,3 @@ with right_column:
         st.subheader("📥 Export Performance Summary")
         reports_directory = "5. Project Development Phase/reports"
         if not os.path.exists(reports_directory):
-            os.makedirs(reports_directory)
-            
