@@ -2,7 +2,7 @@ import os
 import streamlit as st
 import matplotlib.pyplot as plt
 
-# Handle relative import paths correctly regardless of project entry execution vector
+# Handle relative import paths matching your exact repository filenames
 from modules.speech_to_text import transcribe_audio
 from modules.audio_analysis import analyze_audio
 from modules.sematic_analysis import evaluate_semantic_similarity
@@ -69,7 +69,7 @@ with left_column:
                 else:
                     extracted_text = transcription_result.get("text", "")
                     
-                    # Compute feature dimensions and low-level physical properties
+                    # Compute feature dimensions and low-level physical properties via your modules.audio_analysis layer
                     audio_metrics = analyze_audio(temp_audio_path, extracted_text)
                     
                     # Compute semantic embedding cosine tensor weights vs ground-truths
