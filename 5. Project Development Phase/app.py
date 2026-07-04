@@ -191,3 +191,4 @@ with right_column:
             st.download_button(
                 label="📥 Download Evaluation Report (PDF)",
                 data=pdf_file,
+            )
