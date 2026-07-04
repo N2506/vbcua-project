@@ -1,62 +1,52 @@
 # Voice-Based Concept Understanding Analyser (VBCUA)
 
-An advanced AI-powered educational technology system that evaluates how effectively technical conceptual frameworks are explained through spoken audio delivery. This platform extracts multi-dimensional speech telemetry, transcribes verbal frequencies, and calculates semantic matching precision scores against ground-truth benchmarks.
+An advanced AI-powered educational technology platform that evaluates how effectively technical conceptual frameworks are explained through spoken audio delivery. This platform extracts multi-dimensional speech telemetry, transcribes verbal frequencies, and calculates semantic matching precision scores against ground-truth benchmarks.
 
-## 🚀 Key Features
+---
 
-- **Acoustic & Fluency Analytics Engine**: Leverages `librosa` to dynamically compute speaking durations, silence boundary tracking, signal variance, and acoustic energy density thresholds (RMS).
-- **Speech-to-Text Pipeline**: Implements automatic speech recognition pipelines via Hugging Face and OpenAI Whisper checkpoints to translate spoken signals into clear text metadata.
-- **Semantic Evaluation Engine**: Employs Sentence-BERT (`all-MiniLM-L6-v2`) deep learning embeddings to calculate semantic cosine similarity percentages against predefined benchmark definitions.
-- **Relational Data Logger**: Automatically commits processing metadata, fluency stats, raw text strings, and final scores straight into your local MySQL Workbench database tables.
-- **Reporting Architecture**: Generates beautifully formatted, downloadable PDF summaries embedding signal graph plots and technical feedback assessments using `reportlab`.
+## 📁 Project Architecture & Tracking Phases
+This repository is organized strictly according to the tracking template configuration across sequential milestones:
 
-## 📂 Project Architecture
+*   **`1. Brainstorming & Ideation`**: Core concept definition and strategic roadmap targets.
+*   **`2. Requirement Analysis`**: Functional constraints and library dependencies.
+*   **`3. Project Design Phase`**: Architectural pipeline workflows and MySQL database schema diagrams.
+*   **`4. Project Planning Phase`**: Milestone sprint tracking and development timelines.
+*   **`5. Project Development Phase`**: Active functional codebase housing the Streamlit application environment and modular backend engines.
+*   **`6.Project Testing`**: System validation passes and automated code checking logs.
+*   **`7.Project Documentation`**: Local deployment configuration guides and user operations manuals.
+*   **`8.Project Demonstration`**: Project walk-through structures and video review parameters.
 
-```text
-vbcua-project/
-│
-├── app.py                      # Core Integrated Streamlit UI Dashboard Layout
-├── requirements.txt            # Package Dependencies Configuration File
-├── Dump20260701.sql            # Local MySQL Relational Database Export Schema 
-│
-├── modules/                    # Discrete Back-end Operational Subsystems
-│   ├── audio_analysis.py       # Speech Signal Telemetry Extractor
-│   ├── feedback.py             # Hesitation Tracker & Delivery Evaluator
-│   ├── sematic_analysis.py     # Sentence-BERT Embedding Cosine Processor
-│   ├── speech_to_text.py       # Automated Speech Recognition Pipeline
-│   ├── report_generator.py     # PDF Template Builder Engine
-│   └── database_logger.py      # MySQL Relational Schema Logger Bridge
-│
-├── uploads/                    # Temporary Directory Storing User Audios
-├── reports/                    # Compiled Evaluation PDF Summary Documents
-└── images/                     # Visualized Amplitude Signal Waveform Artifacts
-```
+---
 
-## 🛠️ Environment Configuration & Launch
+## ✨ Key Platform Features
+*   **🎙️ Acoustic Analytics Engine**: Leverages `librosa` to compute speaking durations, silence boundary patterns, and average root-mean-square (`rms_energy`) amplitude values.
+*   **🤖 Speech-to-Text Pipeline**: Implements automated speech recognition via cached Hugging Face OpenAI Whisper checkpoints to safely decode spoken arrays into plain text meta-strings.
+*   **🧠 Semantic Evaluation Engine**: Utilizes Sentence-BERT (`SBERT` via `all-MiniLM-L6-v2`) deep learning embedding vectors to calculate cosine similarity metrics against benchmark definitions.
+*   **🧮 Compound Scoring Module**: Implements a balanced 100-point algorithm evaluating semantics (50 pts), delivery filler counts (20 pts), and fluency energy parameters (30 pts).
+*   **📄 Automated PDF Compiler**: Uses `reportlab` to construct downloadable data portfolios displaying waveform charts alongside student grading analytics.
 
-Follow these terminal steps inside your workspace directory to start up the project stack:
+---
 
-### 1. Initialize Workspace Environment
-```bash
-# Create isolated python virtual workspace
-python3 -m venv vbcu_env
+## 🛠️ Technical Stack
+*   **Interface Layer**: Streamlit
+*   **Audio Signal Processing**: Librosa, SoundFile, AudioRead
+*   **Machine Learning Subsystems**: PyTorch, Transformers, Sentence-Transformers, OpenAI-Whisper
+*   **Data Serialization & Relational Storage**: MySQL Workbench
+*   **Graphics & Reporting**: Matplotlib, ReportLab
 
-# Activate workspace parameters 
-source vbcu_env/bin/activate
-```
+---
 
-### 2. Configure Dependencies
-```bash
-# Install deep-learning and frontend modules
-pip install -r requirements.txt
-```
+## 🚀 Quick Local Deployment Guide
 
-### 3. Initialize Relational Schema
-Ensure your local instance of MySQL is operational, run the database engine, and execute the structural commands contained inside `Dump20260701.sql` to map out your 10 relational data structures.
-
-### 4. Deploy the Front-End Platform
-```bash
-streamlit run app.py
-```
-The interface will automatically deploy and register onto `http://localhost:8501`.
-s
+1. Ensure your isolated virtual workspace is fully initialized:
+   ```bash
+   source vbcu_env/bin/activate  # Windows users: .\vbcu_env\Scripts\activate
+   ```
+2. Confirm systemic library requirements are operational:
+   ```bash
+   pip install -r "5. Project Development Phase/requirements.txt"
+   ```
+3. Initialize the server engine via your terminal prompt:
+   ```bash
+   streamlit run "5. Project Development Phase/app.py"
+   ```
