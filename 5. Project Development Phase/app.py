@@ -4,28 +4,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import librosa
 
-# 1. Handle relative import paths correctly matching your exact repository filenames
+# Handle relative import paths matching your exact repository filenames
 from modules.speech_to_text import transcribe_audio
-
-# 2. Safely import the audio analysis function depending on your exact backend naming convention
-try:
-    from modules.audio_analysis import extract_advanced_acoustics
-except ImportError:
-    try:
-        from modules.audio_analysis import analyze_audio as extract_advanced_acoustics
-    except ImportError:
-        from modules.audio_analysis import analyze_audio_features as extract_advanced_acoustics
-
-# 3. Handle semantic analysis script imports
+from modules.audio_analysis import extract_advanced_acoustics
 from modules.sematic_analysis import evaluate_semantic_similarity
-
-# 4. Safely import the scoring engine function under a unified caller name to catch any backend differences
-try:
-    from modules.scoring import calculate_composite_score
-except ImportError:
-    from modules.scoring import calculate_score as calculate_composite_score
-
-# 5. Handle reporting and logging system modules
+from modules.scoring import evaluate_understanding
 from modules.report_generator import generate_pdf_report
 from modules.database_logger import log_evaluation_to_db
 
@@ -88,29 +71,29 @@ with left_column:
                 else:
                     extracted_text = transcription_result.get("text", "")
                     
-                    # Compute acoustic metrics using the error-protected structural function configuration
+                    # 1. Compute acoustic metrics using your audio_analysis module
                     audio_metrics = extract_advanced_acoustics(temp_audio_path)
                     
                     if "error" in audio_metrics:
                         st.error(f"Audio Processing Error: {audio_metrics['error']}")
                         st.stop()
                     
-                    # Compute semantic embedding cosine tensor weights vs ground-truths
+                    # 2. Compute semantic embedding cosine tensor weights vs ground-truths
                     semantic_score = evaluate_semantic_similarity(extracted_text, target_benchmark)
                     
                     # Mock/Calculate a filler word ratio since your core librosa file focuses on signals
                     filler_word_ratio = 0.0
                     
-                    # Run compound calculation metrics with structural fallbacks for return keys
-                    p_ratio = audio_metrics.get("pause_ratio", 0) if audio_metrics.get("pause_ratio") is not None else 0
-                    rms_val = audio_metrics.get("rms_energy", 0) if audio_metrics.get("rms_energy") is not None else 0
-                    
-                    final_score = calculate_composite_score(
-                        semantic_score=semantic_score,
+                    # 3. Call your exact evaluate_understanding function with required parameters
+                    scoring_result = evaluate_understanding(
+                        similarity=semantic_score,
                         filler_ratio=filler_word_ratio,
-                        pause_ratio=p_ratio,
-                        rms_energy=rms_val
+                        audio=audio_metrics
                     )
+                    
+                    final_score = scoring_result.get("score", 0)
+                    status_text = scoring_result.get("level", "Moderate Understanding")
+                    qualitative_feedback = scoring_result.get("feedback", "")
                     
                     # Load a clean time axis array here for your Matplotlib visualizer block to avoid missing data keys
                     try:
@@ -128,6 +111,8 @@ with left_column:
                     st.session_state["audio_metrics"] = audio_metrics
                     st.session_state["semantic_score"] = semantic_score
                     st.session_state["final_score"] = final_score
+                    st.session_state["status_text"] = status_text
+                    st.session_state["qualitative_feedback"] = qualitative_feedback
                     st.session_state["concept_name"] = concept_selection
                     st.session_state["temp_audio_path"] = temp_audio_path
 
@@ -140,6 +125,8 @@ with right_column:
         audio_metrics = st.session_state["audio_metrics"]
         semantic_score = st.session_state["semantic_score"]
         final_score = st.session_state["final_score"]
+        status_text = st.session_state["status_text"]
+        qualitative_feedback = st.session_state["qualitative_feedback"]
         concept_name = st.session_state["concept_name"]
         temp_audio_path = st.session_state["temp_audio_path"]
         
@@ -149,27 +136,18 @@ with right_column:
         
         st.subheader("📈 Fluency & Delivery Signals")
         col_metric1, col_metric2, col_metric3 = st.columns(3)
-        
-        # Support fallback display keys safely for both naming conventions ('duration' vs 'duration_sec')
-        dur_val = audio_metrics.get('duration_sec', audio_metrics.get('duration', 0))
-        p_ratio_val = audio_metrics.get('pause_ratio', 0)
-        rms_val = audio_metrics.get('rms_energy', 0)
-        
-        col_metric1.metric("Speaking Duration", f"{dur_val:.2f} s")
-        col_metric2.metric("Pause Ratio", f"{p_ratio_val * 100:.1f}%")
-        col_metric3.metric("Loudness (RMS Energy)", f"{rms_val:.4f}")
+        col_metric1.metric("Speaking Duration", f"{audio_metrics.get('duration_sec', 0):.2f} s")
+        col_metric2.metric("Pause Ratio", f"{audio_metrics.get('pause_ratio', 0) * 100:.1f}%")
+        col_metric3.metric("Loudness (RMS Energy)", f"{audio_metrics.get('rms_energy', 0):.4f}")
         
         # Enforce exact SkillWallet threshold status criteria and hex color backgrounds
         if final_score >= 80:
-            status_text = "Strong Understanding"
             bg_color = "#2ecc71"       # SkillWallet Green
             text_color = "#ffffff"
         elif final_score >= 50:
-            status_text = "Moderate Understanding"
             bg_color = "#f39c12"       # SkillWallet Orange
             text_color = "#ffffff"
         else:
-            status_text = "Poor Understanding"
             bg_color = "#e74c3c"       # SkillWallet Red
             text_color = "#ffffff"
 
@@ -182,6 +160,7 @@ with right_column:
                 <span style="color: {text_color}; background-color: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 4px; font-size: 14px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">
                     {status_text}
                 </span>
+                <p style="color: {text_color}; margin: 12px 0 0 0; font-style: italic; font-size: 14px;">📝 {qualitative_feedback}</p>
             </div>
             """, 
             unsafe_allow_html=True
@@ -197,3 +176,16 @@ with right_column:
         ax.grid(True, linestyle="--", alpha=0.5)
         st.pyplot(fig)
         
+        # Save output graphic to static artifacts folders path for PDF packaging usage
+        image_artifacts_directory = "5. Project Development Phase/images"
+        if not os.path.exists(image_artifacts_directory):
+            os.makedirs(image_artifacts_directory)
+        plt.savefig(os.path.join(image_artifacts_directory, "waveform.png"), bbox_inches="tight")
+        plt.close()
+        
+        # Generate dynamic downloadable ReportLab PDF performance data summaries
+        st.subheader("📥 Export Performance Summary")
+        reports_directory = "5. Project Development Phase/reports"
+        if not os.path.exists(reports_directory):
+            os.makedirs(reports_directory)
+            
