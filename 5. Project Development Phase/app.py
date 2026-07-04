@@ -50,10 +50,11 @@ with left_column:
     if uploaded_file is not None:
         st.audio(uploaded_file, format="audio/wav")
         
-        # Save temporary payload array assets safely inside the uploads structural file path
-        upload_directory = "5. Project Development Phase/uploads"
+        # Enforce absolute directory mapping paths to completely protect against folder space errors
+        current_working_dir = os.path.dirname(os.path.abspath(__file__))
+        upload_directory = os.path.join(current_working_dir, "uploads")
         if not os.path.exists(upload_directory):
-            os.makedirs(upload_directory)
+            os.makedirs(upload_directory, exist_ok=True)
             
         temp_audio_path = os.path.join(upload_directory, uploaded_file.name)
         with open(temp_audio_path, "wb") as file_buffer:
@@ -184,12 +185,11 @@ with right_column:
         ax.set_ylabel("Amplitude", fontsize=9)
         ax.grid(True, linestyle="--", alpha=0.5)
         st.pyplot(fig)
-        
-        # Save output graphic to static artifacts folders path for PDF packaging usage
-                  # Save output graphic to static artifacts folders path for PDF packaging usage
-        image_artifacts_directory = "5. Project Development Phase/images"
+                # Save output graphic to static artifacts folders path using solid absolute path structures
+        current_working_dir = os.path.dirname(os.path.abspath(__file__))
+        image_artifacts_directory = os.path.join(current_working_dir, "images")
         if not os.path.exists(image_artifacts_directory):
-            os.makedirs(image_artifacts_directory)
+            os.makedirs(image_artifacts_directory, exist_ok=True)
         plt.savefig(os.path.join(image_artifacts_directory, "waveform.png"), bbox_inches="tight")
         plt.close()
         
@@ -197,9 +197,9 @@ with right_column:
         # 4. Generate dynamic downloadable ReportLab PDF Summaries
         # -------------------------------------------------------------
         st.subheader("📥 Export Performance Summary")
-        reports_directory = "5. Project Development Phase/reports"
+        reports_directory = os.path.join(current_working_dir, "reports")
         if not os.path.exists(reports_directory):
-            os.makedirs(reports_directory)
+            os.makedirs(reports_directory, exist_ok=True)
             
         pdf_output_path = os.path.join(reports_directory, "evaluation_report.pdf")
         generate_pdf_report(pdf_output_path, concept_name, final_score, status_text, audio_metrics, extracted_text)
@@ -224,3 +224,4 @@ with right_column:
             pass
     else:
         st.info("💡 Complete the left processing steps and click analyze to output assessment grading results cards.")
+
