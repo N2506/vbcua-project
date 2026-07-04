@@ -186,3 +186,41 @@ with right_column:
         st.pyplot(fig)
         
         # Save output graphic to static artifacts folders path for PDF packaging usage
+                  # Save output graphic to static artifacts folders path for PDF packaging usage
+        image_artifacts_directory = "5. Project Development Phase/images"
+        if not os.path.exists(image_artifacts_directory):
+            os.makedirs(image_artifacts_directory)
+        plt.savefig(os.path.join(image_artifacts_directory, "waveform.png"), bbox_inches="tight")
+        plt.close()
+        
+        # -------------------------------------------------------------
+        # 4. Generate dynamic downloadable ReportLab PDF Summaries
+        # -------------------------------------------------------------
+        st.subheader("📥 Export Performance Summary")
+        reports_directory = "5. Project Development Phase/reports"
+        if not os.path.exists(reports_directory):
+            os.makedirs(reports_directory)
+            
+        pdf_output_path = os.path.join(reports_directory, "evaluation_report.pdf")
+        generate_pdf_report(pdf_output_path, concept_name, final_score, status_text, audio_metrics, extracted_text)
+        
+        with open(pdf_output_path, "rb") as pdf_file:
+            st.download_button(
+                label="📥 Download Evaluation Report (PDF)",
+                data=pdf_file,
+                file_name=f"VBCUA_Report_{concept_name.replace(' ', '_')}.pdf",
+                mime="application/pdf"
+            )
+            
+        # Log final calculation entries safely using your exact database signature function name and variables
+        try:
+            log_evaluation_session(
+                topic=concept_name,
+                metrics=audio_metrics,
+                transcript=extracted_text,
+                evaluation=scoring_result
+            )
+        except Exception as database_exception:
+            pass
+    else:
+        st.info("💡 Complete the left processing steps and click analyze to output assessment grading results cards.")
