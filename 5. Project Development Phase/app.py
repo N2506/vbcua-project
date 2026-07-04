@@ -187,4 +187,58 @@ with right_column:
         ax.set_ylabel("Amplitude", fontsize=9)
         ax.grid(True, linestyle="--", alpha=0.5)
         st.pyplot(fig)
-        # Save output graphic to static artifacts folders path using absolute directory path structuresimage_artifacts_directory = os.path.join(BASE_DIR, "images")if not os.path.exists(image_artifacts_directory):os.makedirs(image_artifacts_directory, exist_ok=True)plt.savefig(os.path.join(image_artifacts_directory, "waveform.png"), bbox_inches="tight")plt.close()# 4. Generate dynamic downloadable ReportLab PDF summaries directly underneath the waveform chartst.subheader("📥 Export Performance Summary")reports_directory = os.path.join(BASE_DIR, "reports")if not os.path.exists(reports_directory):os.makedirs(reports_directory, exist_ok=True)pdf_output_path = os.path.join(reports_directory, "evaluation_report.pdf")generate_pdf_report(pdf_output_path, concept_name, final_score, status_text, audio_metrics, extracted_text)with open(pdf_output_path, "rb") as pdf_file:st.download_button(label="📥 Download Evaluation Report (PDF)",data=pdf_file,file_name=f"VBCUA_Report_{concept_name.replace(' ', '_')}.pdf",mime="application/pdf")# Log final calculation entries safely using your exact database signature function name and variablestry:log_evaluation_session(topic=concept_name,metrics=audio_metrics,transcript=extracted_text,evaluation=scoring_result)except Exception as database_exception:passelse:st.info("💡 Complete the left processing steps and click analyze to output assessment grading results cards.")
+               # Save output graphic to static artifacts folders path using absolute directory path structures
+        image_artifacts_directory = os.path.join(BASE_DIR, "images")
+        if not os.path.exists(image_artifacts_directory):
+            os.makedirs(image_artifacts_directory, exist_ok=True)
+        plt.savefig(os.path.join(image_artifacts_directory, "waveform.png"), bbox_inches="tight")
+        plt.close()
+    else:
+        st.info("💡 Complete the left processing steps and click analyze to output assessment grading results cards.")
+
+# -----------------------------------------------------------------------------
+# FIXED ACTION: Render PDF Download Area across the full wide page layout,
+# completely outside the columns so it is visible immediately under the graph!
+# -----------------------------------------------------------------------------
+if st.session_state.get("pipeline_calculated", False):
+    st.markdown("---")
+    st.header("📥 Export Performance Summary")
+    
+    # Re-fetch variables for safety
+    concept_name = st.session_state["concept_name"]
+    final_score = st.session_state["final_score"]
+    status_text = st.session_state["status_text"]
+    audio_metrics = st.session_state["audio_metrics"]
+    extracted_text = st.session_state["extracted_text"]
+    scoring_result = st.session_state["scoring_result"]
+
+    reports_directory = os.path.join(BASE_DIR, "reports")
+    if not os.path.exists(reports_directory):
+        os.makedirs(reports_directory, exist_ok=True)
+        
+    pdf_output_path = os.path.join(reports_directory, "evaluation_report.pdf")
+    generate_pdf_report(pdf_output_path, concept_name, final_score, status_text, audio_metrics, extracted_text)
+    
+    # Display the large, highly interactive download button block
+    with open(pdf_output_path, "rb") as pdf_file:
+        st.download_button(
+            label="📥 Click Here to Download Evaluation Report (PDF)",
+            data=pdf_file,
+            file_name=f"VBCUA_Report_{concept_name.replace(' ', '_')}.pdf",
+            mime="application/pdf",
+            type="primary"
+        )
+        
+    # Log database metrics safely
+    try:
+        log_evaluation_session(
+            topic=concept_name,
+            metrics=audio_metrics,
+            transcript=extracted_text,
+            evaluation=scoring_result
+        )
+    except Exception:
+        pass
+
+
+     
