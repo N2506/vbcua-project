@@ -187,3 +187,6 @@ with right_column:
         st.subheader("📥 Export Performance Summary")
         reports_directory = "5. Project Development Phase/reports"
         if not os.path.exists(reports_directory):
+            os.makedirs(reports_directory)
+            
+
