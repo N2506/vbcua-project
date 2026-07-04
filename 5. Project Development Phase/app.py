@@ -10,7 +10,7 @@ from modules.audio_analysis import extract_advanced_acoustics
 from modules.sematic_analysis import evaluate_semantic_similarity
 from modules.scoring import evaluate_understanding
 from modules.report_generator import generate_pdf_report
-from modules.database_logger import log_evaluation_to_db
+from modules.database_logger import log_evaluation_session
 
 # Configure Streamlit Application Page Metrics Layout
 st.set_page_config(
@@ -109,7 +109,7 @@ with left_column:
                     st.session_state["pipeline_calculated"] = True
                     st.session_state["extracted_text"] = extracted_text
                     st.session_state["audio_metrics"] = audio_metrics
-                    st.session_state["semantic_score"] = semantic_score
+                    st.session_state["scoring_result"] = scoring_result
                     st.session_state["final_score"] = final_score
                     st.session_state["status_text"] = status_text
                     st.session_state["qualitative_feedback"] = qualitative_feedback
@@ -123,7 +123,7 @@ with right_column:
         # Unpack active session variables
         extracted_text = st.session_state["extracted_text"]
         audio_metrics = st.session_state["audio_metrics"]
-        semantic_score = st.session_state["semantic_score"]
+        scoring_result = st.session_state["scoring_result"]
         final_score = st.session_state["final_score"]
         status_text = st.session_state["status_text"]
         qualitative_feedback = st.session_state["qualitative_feedback"]
