@@ -99,8 +99,8 @@ with left_column:
                         audio_metrics["time_axis"] = time_axis
                         audio_metrics["amplitude_array"] = y
                     except Exception:
-                        audio_metrics["time_axis"] = np.array([0, 1])
-                        audio_metrics["amplitude_array"] = np.array([0, 0])
+                        audio_metrics["time_axis"] = np.array([])
+                        audio_metrics["amplitude_array"] = np.array([])
                     
                     # Persist performance analytics payload directly into active session states
                     st.session_state["pipeline_calculated"] = True
@@ -129,7 +129,6 @@ with right_column:
         
         st.subheader("📈 Fluency & Delivery Signals")
         col_metric1, col_metric2, col_metric3 = st.columns(3)
-        # Using 'duration_sec' directly as defined in your shared audio snippet
         col_metric1.metric("Speaking Duration", f"{audio_metrics.get('duration_sec', 0):.2f} s")
         col_metric2.metric("Pause Ratio", f"{audio_metrics.get('pause_ratio', 0) * 100:.1f}%")
         col_metric3.metric("Loudness (RMS Energy)", f"{audio_metrics.get('rms_energy', 0):.4f}")
@@ -190,3 +189,5 @@ with right_column:
         
         with open(pdf_output_path, "rb") as pdf_file:
             st.download_button(
+                label="📥 Download Evaluation Report (PDF)",
+                data=pdf_file,
