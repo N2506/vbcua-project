@@ -1,169 +1,186 @@
-import streamlit as st
 import os
-import sys
+import streamlit as st
+import matplotlib.pyplot as plt
 
-# Track clean modular directories
-current_dir = os.path.dirname(os.path.abspath(__file__))
-modules_dir = os.path.join(current_dir, "modules")
-if modules_dir not in sys.path:
-    sys.path.append(modules_dir)
+# Handle relative import paths correctly regardless of project entry execution vector
+from modules.speech_to_text import transcribe_audio
+from modules.audio_analysis import analyze_audio_features
+from modules.sematic_analysis import evaluate_semantic_similarity
+from modules.scoring import calculate_composite_score
+from modules.report_generator import generate_pdf_report
+from modules.database_logger import log_evaluation_to_db
 
-# Ground-truth concept references
-REFERENCE_CONCEPTS = {
-    "Database Normalization": "Database normalization is the process of structuring a relational database in accordance with a series of so-called normal forms in order to reduce data redundancy and improve data integrity.",
-    "OSI Model Layers": "The Open Systems Interconnection model is a conceptual model that characterizes and standardizes the communication functions of a telecommunication or computing system without regard to its underlying internal structure and technology.",
-    "Machine Learning Basics": "Machine learning is a field of study in artificial intelligence concerned with the development and study of statistical algorithms that can learn from data and generalize to unseen data without explicit instructions.",
-    "Cloud Computing": "Cloud computing is the on-demand availability of computer system resources, especially data storage and computing power, without direct active management by the user."
-}
-
-try:
-    import audio_analysis
-    import speech_to_text
-    import sematic_analysis
-    import feedback
-    import scoring
-    import report_generator
-    import waveform
-    import database_logger
-except ImportError as e:
-    st.error(f"Module Loading Error: {str(e)}")
-
-st.set_page_config(page_title="VBCUA - Analytical Suite", page_icon="🎙️", layout="wide")
+# Configure Streamlit Application Page Metrics Layout
+st.set_page_config(
+    page_title="Voice-Based Concept Understanding Analyser",
+    page_icon="🎙️",
+    layout="wide"
+)
 
 st.title("🎙️ Voice-Based Concept Understanding Analyser")
 st.markdown("---")
 
-left_panel, right_panel = st.columns(2)
+# Setup split dashboard column layouts
+left_column, right_column = st.columns([1, 1])
 
-with left_panel:
+with left_column:
     st.header("📥 Audio Processing Portal")
-    topic = st.selectbox("Choose the target concept topic:", list(REFERENCE_CONCEPTS.keys()))
-    uploaded_audio = st.file_uploader("Upload audio tracks (.mp3, .wav, .m4a):", type=["mp3", "wav", "m4a"])
     
-    if uploaded_audio is not None:
-        os.makedirs("uploads", exist_ok=True)
-        file_path = os.path.join("uploads", uploaded_audio.name)
-        with open(file_path, "wb") as f:
-            f.write(uploaded_audio.getbuffer())
-            
-        st.success("Audio track uploaded successfully.")
-        st.audio(file_path)
+    # 1. Load available technical baseline definitions from your data/ database configurations
+    concept_selection = st.selectbox(
+        "Select Concept Framework Definition Benchmark:",
+        ["Semantic Normalization", "Relational Database Keys", "Gradient Descent Optimization"]
+    )
+    
+    # Set static placeholder text ground-truths based on selection for baseline scoring matching
+    ground_truths = {
+        "Semantic Normalization": "Structuring data to reduce redundancy and improve data integrity.",
+        "Relational Database Keys": "A primary key is a unique identifier for a relational database table row records.",
+        "Gradient Descent Optimization": "An optimization algorithm used to minimize a loss function by iteratively moving in the direction of steepest descent."
+    }
+    target_benchmark = ground_truths[concept_selection]
+    
+    st.info(f"**Benchmark Definition Baseline:** {target_benchmark}")
+    
+    # 2. Interactive Media Capture Controls (Drag and drop file uploader)
+    uploaded_file = st.file_uploader("Upload Student Audio Performance Answer (.wav):", type=["wav"])
+    
+    if uploaded_file is not None:
+        st.audio(uploaded_file, format="audio/wav")
         
-        if st.button("🚀 Analyze Concept Explanation", use_container_width=True):
-            with st.spinner("🤖 Running composite AI scoring engines..."):
-                try:
-                    st.session_state["topic"] = topic
+        # Save temporary payload array assets safely inside the uploads structural file path
+        upload_directory = "5. Project Development Phase/uploads"
+        if not os.path.exists(upload_directory):
+            os.makedirs(upload_directory)
+            
+        temp_audio_path = os.path.join(upload_directory, uploaded_file.name)
+        with open(temp_audio_path, "wb") as file_buffer:
+            file_buffer.write(uploaded_file.getbuffer())
+            
+        # Core Pipeline Triggers Action Button Element
+        if st.button("Run Analytical Evaluation Pipeline", type="primary"):
+            with st.spinner("Processing speech metrics, computing semantic vectors..."):
+                
+                # Execute automated system pipeline processing sequences cleanly
+                transcription_result = transcribe_audio(temp_audio_path)
+                
+                if "error" in transcription_result:
+                    st.error(f"ASR Pipeline Tracking Error: {transcription_result['error']}")
+                else:
+                    extracted_text = transcription_result.get("text", "")
                     
-                    # 1. Advanced Acoustic Attributes Extraction
-                    acoustics = audio_analysis.extract_advanced_acoustics(file_path)
-                    st.session_state["acoustics"] = acoustics
-                    st.session_state["chart"] = waveform.generate_waveform_plot(file_path)
+                    # Compute feature dimensions and low-level physical properties
+                    audio_metrics = analyze_audio_features(temp_audio_path, extracted_text)
                     
-                    # 2. Raw Speech to Text Pipeline
-                    stt = speech_to_text.transcribe_audio(file_path)
-                    transcript = stt.get("text", "Sample speech transcript.")
-                    st.session_state["transcript"] = transcript
+                    # Compute semantic embedding cosine tensor weights vs ground-truths
+                    semantic_score = evaluate_semantic_similarity(extracted_text, target_benchmark)
                     
-                    # 3. Pacing & Hesitation Tracking 
-                    fluency = feedback.analyze_speech_fluency(transcript, acoustics.get("pause_ratio", 0.0))
-                    st.session_state["fluency"] = fluency
-                    
-                    # 4. Compute Semantic Overlap Percentage
-                    semantic_result = sematic_analysis.evaluate_semantic_similarity(transcript, REFERENCE_CONCEPTS[topic])
-                    raw_sim_score = semantic_result.get("score", 0.0)
-                    
-                    # 5. EXECUTE THE MULTI-FACTOR COMPOSITE ENGINE REQUIREMENT
-                    composite_evaluation = scoring.evaluate_understanding(
-                        similarity=raw_sim_score,
-                        filler_ratio=fluency.get("filler_ratio", 0.0),
-                        audio=acoustics
+                    # Run compound calculations engine out of 100 points
+                    final_score = calculate_composite_score(
+                        semantic_score=semantic_score,
+                        filler_ratio=audio_metrics.get("filler_word_ratio", 0),
+                        pause_ratio=audio_metrics.get("pause_ratio", 0),
+                        rms_energy=audio_metrics.get("rms_energy", 0)
                     )
-                    st.session_state["semantic"] = composite_evaluation
                     
-                    # 6. Push Live Transaction data directly to local MySQL workbench tables
-                    if database_logger:
-                        database_logger.log_evaluation_session(
-                            topic=topic,
-                            metrics=acoustics,
-                            transcript=transcript,
-                            evaluation=composite_evaluation
-                        )
-                    
-                    st.session_state["run_complete"] = True
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Analysis system exception: {str(e)}")
+                    # Persist performance analytics payload directly into active session states
+                    st.session_state["pipeline_calculated"] = True
+                    st.session_state["extracted_text"] = extracted_text
+                    st.session_state["audio_metrics"] = audio_metrics
+                    st.session_state["semantic_score"] = semantic_score
+                    st.session_state["final_score"] = final_score
+                    st.session_state["concept_name"] = concept_selection
+                    st.session_state["temp_audio_path"] = temp_audio_path
 
-with right_panel:
+with right_column:
     st.header("📊 Analytical Report Output")
-    if "run_complete" not in st.session_state:
-        st.info("Upload an audio file on the left panel and click 'Analyze' to review metrics here.")
-    else:
-        acoustics = st.session_state["acoustics"]
-        fluency = st.session_state["fluency"]
-        semantic = st.session_state["semantic"]
-        transcript = st.session_state["transcript"]
+    
+    if st.session_state.get("pipeline_calculated", False):
+        # Unpack active session variables
+        extracted_text = st.session_state["extracted_text"]
+        audio_metrics = st.session_state["audio_metrics"]
+        semantic_score = st.session_state["semantic_score"]
+        final_score = st.session_state["final_score"]
+        concept_name = st.session_state["concept_name"]
+        temp_audio_path = st.session_state["temp_audio_path"]
         
-        # Display Fluency telemetry metrics
-        st.subheader("🔊 Fluency & Delivery Signals")
-        m_col1, m_col2, m_col3 = st.columns(3)
-        m_col1.metric("Duration", f"{acoustics.get('duration_sec')} s")
-        m_col2.metric("Pause Ratio", f"{int(acoustics.get('pause_ratio', 0) * 100)}%")
-        m_col3.metric("Loudness (RMS)", f"{acoustics.get('rms_energy')}")
-        
-        # Display text field outputs
+        # Display extracted delivery details
         st.subheader("📝 Automated Speech Transcription")
-        st.text_area("Whisper Output Text:", value=transcript, height=90, disabled=True)
+        st.text_area("Decoded Answer String Matrix:", value=extracted_text, height=100, disabled=True)
         
-        # Display Hesitation Metrics
-        st.subheader("📊 Verbal Delivery Metrics")
-        f_col1, f_col2 = st.columns(2)
-        f_col1.metric("Total Words Spoken", fluency.get("total_words"))
-        f_col2.metric("Filler Word Count", fluency.get("filler_count"))
-        st.warning(f"💡 Delivery Feedback: {fluency.get('delivery_feedback')}")
+        st.subheader("📈 Fluency & Delivery Signals")
+        col_metric1, col_metric2, col_metric3 = st.columns(3)
+        col_metric1.metric("Speaking Duration", f"{audio_metrics.get('duration', 0):.2f} s")
+        col_metric2.metric("Filler Word Ratio", f"{audio_metrics.get('filler_word_ratio', 0) * 100:.1f}%")
+        col_metric3.metric("Loudness (RMS Energy)", f"{audio_metrics.get('rms_energy', 0):.4f}")
         
-        # Display the composite normalized scorecard output
-        st.subheader("🎯 Composite Multi-Factor Evaluation")
-        s_col1, s_col2 = st.columns(2)
-        s_col1.metric("Weighted Overall Score", f"{semantic.get('score')} / 100")
-        
-        # Apply custom layout labels dynamically matching classifications
-        level_str = semantic.get("level")
-        if "Strong" in level_str:
-            st.success(level_str)
-        elif "Moderate" in level_str:
-            st.warning(level_str)
+        # Enforce exact SkillWallet threshold status criteria and hex color backgrounds
+        if final_score >= 80:
+            status_text = "Strong Understanding"
+            bg_color = "#2ecc71"       # SkillWallet Green
+            text_color = "#ffffff"
+        elif final_score >= 50:
+            status_text = "Moderate Understanding"
+            bg_color = "#f39c12"       # SkillWallet Orange
+            text_color = "#ffffff"
         else:
-            st.error(level_str)
-            
-        st.info(f"💡 AI Content Insight Assessment: {semantic.get('feedback')}")
+            status_text = "Poor Understanding"
+            bg_color = "#e74c3c"       # SkillWallet Red
+            text_color = "#ffffff"
+
+        # Render custom HTML alert block container over standard streamlit styling
+        st.markdown(
+            f"""
+            <div style="background-color: {bg_color}; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 6px solid rgba(0,0,0,0.2);">
+                <h3 style="color: {text_color}; margin: 0; font-family: sans-serif; font-size: 20px;">🎯 Composite Multi-Factor Evaluation</h3>
+                <p style="color: {text_color}; font-size: 32px; font-weight: bold; margin: 10px 0 5px 0;">{final_score} / 100</p>
+                <span style="color: {text_color}; background-color: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 4px; font-size: 14px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">
+                    {status_text}
+                </span>
+            </div>
+            """, 
+            unsafe_allow_html=True
+        )
         
-        # Embed graphs and printable items
-        chart_path = st.session_state.get("chart", None)
-        if chart_path and os.path.exists(chart_path):
-            st.divider()
-            st.subheader("📉 Signal Amplitude Waveform")
-            st.image(chart_path, use_container_width=True)
+        # Render responsive Matplotlib Waveform Charts
+        st.subheader("🌊 Signal Amplitude Waveform")
+        fig, ax = plt.subplots(figsize=(10, 3.5))
+        ax.plot(audio_metrics.get("time_axis"), audio_metrics.get("amplitude_array"), color="#2980b9", alpha=0.85)
+        ax.set_title("Speech Amplitude Waveform", fontsize=12, pad=10)
+        ax.set_xlabel("Time (Seconds)", fontsize=9)
+        ax.set_ylabel("Amplitude", fontsize=9)
+        ax.grid(True, linestyle="--", alpha=0.5)
+        st.pyplot(fig)
+        
+        # Save output graphic to static artifacts folders path for PDF packaging usage
+        image_artifacts_directory = "5. Project Development Phase/images"
+        if not os.path.exists(image_artifacts_directory):
+            os.makedirs(image_artifacts_directory)
+        plt.savefig(os.path.join(image_artifacts_directory, "waveform.png"), bbox_inches="tight")
+        plt.close()
+        
+        # 4. Generate dynamic downloadable ReportLab PDF performance data summary summaries
+        st.subheader("📥 Export Performance Summary")
+        reports_directory = "5. Project Development Phase/reports"
+        if not os.path.exists(reports_directory):
+            os.makedirs(reports_directory)
             
-        if report_generator:
-            st.divider()
-            st.subheader("📥 Export Performance Summary")
-            try:
-                pdf_file_path = report_generator.generate_pdf_report(
-                    topic=st.session_state.get("topic", "Evaluation"),
-                    metrics=acoustics,
-                    transcript=transcript,
-                    evaluation=semantic,
-                    chart_path=chart_path
-                )
-                if os.path.exists(pdf_file_path):
-                    with open(pdf_file_path, "rb") as pdf_file:
-                        st.download_button(
-                            label="Download Evaluation Report (PDF)",
-                            data=pdf_file,
-                            file_name="VBCUA_Evaluation_Report.pdf",
-                            mime="application/pdf",
-                            use_container_width=True
-                        )
-            except Exception as pdf_error:
-                st.error(f"Could not build PDF interface: {str(pdf_error)}")
+        pdf_output_path = os.path.join(reports_directory, "evaluation_report.pdf")
+        generate_pdf_report(pdf_output_path, concept_name, final_score, status_text, audio_metrics, extracted_text)
+        
+        with open(pdf_output_path, "rb") as pdf_file:
+            st.download_button(
+                label="📥 Download Evaluation Report (PDF)",
+                data=pdf_file,
+                file_name=f"VBCUA_Report_{concept_name.replace(' ', '_')}.pdf",
+                mime="application/pdf"
+            )
+            
+        # Log final calculation entries safely straight back down into local relational MySQL setups
+        try:
+            log_evaluation_to_db(concept_name, extracted_text, semantic_score, audio_metrics, final_score, status_text)
+        except Exception as database_exception:
+            # Handle localized server database absences gracefully without disrupting core operational pipelines
+            pass
+    else:
+        st.info("💡 Complete the left processing steps and click analyze to output assessment grading results cards.")
