@@ -4,7 +4,7 @@ An advanced AI-powered educational technology platform that evaluates how effect
 
 ---
 
-## 📁 Project Architecture & Tracking Phases
+##  Project Architecture & Tracking Phases
 This repository is organized strictly according to the tracking template configuration across sequential milestones:
 
 *   **`1. Brainstorming & Ideation`**: Core concept definition and strategic roadmap targets.
@@ -18,16 +18,16 @@ This repository is organized strictly according to the tracking template configu
 
 ---
 
-## ✨ Key Platform Features
-*   **🎙️ Acoustic Analytics Engine**: Leverages `librosa` to compute speaking durations, silence boundary patterns, and average root-mean-square (`rms_energy`) amplitude values.
-*   **🤖 Speech-to-Text Pipeline**: Implements automated speech recognition via cached Hugging Face OpenAI Whisper checkpoints to safely decode spoken arrays into plain text meta-strings.
-*   **🧠 Semantic Evaluation Engine**: Utilizes Sentence-BERT (`SBERT` via `all-MiniLM-L6-v2`) deep learning embedding vectors to calculate cosine similarity metrics against benchmark definitions.
-*   **🧮 Compound Scoring Module**: Implements a balanced 100-point algorithm evaluating semantics (50 pts), delivery filler counts (20 pts), and fluency energy parameters (30 pts).
-*   **📄 Automated PDF Compiler**: Uses `reportlab` to construct downloadable data portfolios displaying waveform charts alongside student grading analytics.
+##  Key Platform Features
+*   ** Acoustic Analytics Engine**: Leverages `librosa` to compute speaking durations, silence boundary patterns, and average root-mean-square (`rms_energy`) amplitude values.
+*   ** Speech-to-Text Pipeline**: Implements automated speech recognition via cached Hugging Face OpenAI Whisper checkpoints to safely decode spoken arrays into plain text meta-strings.
+*   ** Semantic Evaluation Engine**: Utilizes Sentence-BERT (`SBERT` via `all-MiniLM-L6-v2`) deep learning embedding vectors to calculate cosine similarity metrics against benchmark definitions.
+*   ** Compound Scoring Module**: Implements a balanced 100-point algorithm evaluating semantics (50 pts), delivery filler counts (20 pts), and fluency energy parameters (30 pts).
+*   ** Automated PDF Compiler**: Uses `reportlab` to construct downloadable data portfolios displaying waveform charts alongside student grading analytics.
 
 ---
 
-## 🛠️ Technical Stack
+##  Technical Stack
 *   **Interface Layer**: Streamlit
 *   **Audio Signal Processing**: Librosa, SoundFile, AudioRead
 *   **Machine Learning Subsystems**: PyTorch, Transformers, Sentence-Transformers, OpenAI-Whisper
@@ -36,7 +36,7 @@ This repository is organized strictly according to the tracking template configu
 
 ---
 
-## 🚀 Quick Local Deployment Guide
+##  Quick Local Deployment Guide
 
 1. Ensure your isolated virtual workspace is fully initialized:
    ```bash
